@@ -48,6 +48,6 @@ def verify_otp(mobile_number, user_otp):
         otp_obj.delete()
         return True, 'OTP verified successfully.'
 
-    otp_obj.attempts += 1
-    otp_obj.save()
+    # otp_obj.attempts += 1
+    # otp_obj.save()
     return False, 'Incorrect OTP. Please try again.'

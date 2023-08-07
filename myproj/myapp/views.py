@@ -9,6 +9,9 @@ def request_otp_view(request):
     if not mobile_number or not mobile_number.isdigit() or len(mobile_number) != 10:
         return Response({'error': 'Please provide a valid 10-digit mobile number.'}, status=400)
 
+    if not 6 <= int(mobile_number[0]) <= 9:
+        return Response({'error': 'Mobile number should start with a digit between 6 and 9.'}, status=400)
+
     otp, message = request_otp(mobile_number)
     if not otp:
         return Response({'error': message}, status=429)

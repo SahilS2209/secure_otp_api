@@ -6,5 +6,5 @@ class OTP(models.Model):
     attempts = models.PositiveIntegerField(default=0)
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.mobile_number} - {self.otp} - {self.attempts}"

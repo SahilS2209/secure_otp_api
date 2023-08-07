@@ -26,14 +26,16 @@ def request_otp(mobile_number):
 
         # Update the timestamp, reset the attempts counter, and resend the OTP
         OTPMapper.update_otp(otp_obj, generate_otp(), otp_obj.attempts + 1)
+        return otp_obj.otp, 'OTP resent successfully.'
     else:
         # Delete previous expired OTP and create a new one
         OTPMapper.delete_expired_otps(mobile_number)
         otp_obj = OTPMapper.create_otp(mobile_number, generate_otp(), 1)
+        return otp_obj.otp, 'OTP sent successfully.'
 
-    otp_obj.timestamp = current_datetime
-    otp_obj.save()
-    return otp_obj.otp, 'OTP resent successfully.'
+    # otp_obj.timestamp = current_datetime
+    # otp_obj.save()
+    # return otp_obj.otp, 'OTP resent successfully.'
 
 def verify_otp(mobile_number, user_otp):
     otp_obj = OTPMapper.get_active_otp_by_mobile_number(mobile_number)

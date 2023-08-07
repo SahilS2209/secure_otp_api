@@ -5,7 +5,7 @@ from datetime import timedelta
 
 
 class OTPMapper:
-    def _init_(self, mobile_number):
+    def __init__(self, mobile_number):
         self.mobile_number = mobile_number
 
     def get_active_otp(self):

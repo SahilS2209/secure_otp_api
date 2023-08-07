@@ -32,4 +32,3 @@ class OTPMapper:
             mobile_number=self.mobile_number,
             timestamp__lt=timestamp_limit
         ).delete()
-

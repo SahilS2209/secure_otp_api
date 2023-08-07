@@ -9,47 +9,44 @@ def generate_otp(length=6):
     characters = string.digits
     return ''.join(secrets.choice(characters) for _ in range(length))
 
-
 class OTPService:
+    @staticmethod
     def request_otp(mobile_number):
         current_datetime = get_current_datetime()
+        otp_mapper = OTPMapper(mobile_number)
 
-        otp_obj = OTPMapper.get_active_otp_by_mobile_number(mobile_number)
+        otp_obj = otp_mapper.get_active_otp()
 
         if otp_obj and otp_obj.attempts >= MAX_OTP_ATTEMPTS:
-            return None, 'Maximum attempts reached. Try again after 30 mins.'
+            return None, f'Maximum attempts reached. Try again after {OTP_EXPIRY_MINUTES} mins.'
 
-        if otp_obj:
-            if current_datetime >= otp_obj.timestamp + timedelta(minutes=OTP_EXPIRY_MINUTES):
-                # Delete previous expired OTP and create a new one
-                OTPMapper.delete_expired_otps(mobile_number)
-                otp_obj = OTPMapper.create_otp(mobile_number, generate_otp(), 1)
-                return otp_obj.otp, 'OTP sent successfully.'
+        create_new = not otp_obj or current_datetime >= otp_obj.timestamp + timedelta(minutes=OTP_EXPIRY_MINUTES)
 
-            # Update the timestamp, reset the attempts counter, and resend the OTP
-            OTPMapper.update_otp(otp_obj, generate_otp(), otp_obj.attempts + 1)
-            otp_obj.timestamp = current_datetime
-            otp_obj.save()
-            return otp_obj.otp, 'OTP resent successfully.'
-        else:
-            # Delete previous expired OTP and create a new one
-            OTPMapper.delete_expired_otps(mobile_number)
-            otp_obj = OTPMapper.create_otp(mobile_number, generate_otp(), 1)
+        if create_new:
+            otp_mapper.delete_expired_otps()
+            otp_obj = otp_mapper.create_otp(generate_otp(), 1)
             return otp_obj.otp, 'OTP sent successfully.'
 
+        otp_mapper.update_otp(otp_obj, generate_otp(), otp_obj.attempts + 1)
+        otp_obj.timestamp = current_datetime
+        otp_obj.save()
+        return otp_obj.otp, 'OTP resent successfully.'
+
+    @staticmethod
     def verify_otp(mobile_number, user_otp):
-        otp_obj = OTPMapper.get_active_otp_by_mobile_number(mobile_number)
+        
+        otp_mapper = OTPMapper(mobile_number)
+        
+        otp_obj = otp_mapper.get_active_otp()
 
         if not otp_obj:
             return False, 'OTP not found. Please request OTP first.'
 
         if otp_obj.attempts >= MAX_OTP_ATTEMPTS:
-            return False, 'Maximum attempts reached. Try again after 30 mins.'
+            return False, f'Maximum attempts reached. Try again after {OTP_EXPIRY_MINUTES} mins.'
 
         if otp_obj.otp == user_otp:
             otp_obj.delete()
             return True, 'OTP verified successfully.'
 
-        # otp_obj.attempts += 1
-        # otp_obj.save()
         return False, 'Incorrect OTP. Please try again.'

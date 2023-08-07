@@ -1,6 +1,9 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .services import request_otp, verify_otp
+from .services import OTPService
+
+request_otp_service = OTPService.request_otp
+verify_otp_service = OTPService.verify_otp
 
 @api_view(['POST'])
 def request_otp_view(request):
@@ -12,7 +15,7 @@ def request_otp_view(request):
     if not 6 <= int(mobile_number[0]) <= 9:
         return Response({'error': 'Mobile number should start with a digit between 6 and 9.'}, status=400)
 
-    otp, message = request_otp(mobile_number)
+    otp, message = request_otp_service(mobile_number)
     if not otp:
         return Response({'error': message}, status=429)
 
@@ -32,7 +35,7 @@ def verify_otp_view(request):
     if len(user_otp) != 6 or not user_otp.isdigit():
         return Response({'error': 'Please provide a valid 6-digit OTP.'}, status=400)
 
-    is_verified, message = verify_otp(mobile_number, user_otp)
+    is_verified, message = verify_otp_service(mobile_number, user_otp)
     if is_verified:
         return Response({'message': message}, status=200)
     else:

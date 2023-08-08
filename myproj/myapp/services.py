@@ -4,10 +4,8 @@ import secrets
 import string
 from .mappers import OTPMapper
 from .utils import get_current_datetime
+from .utils import generate_otp
 
-def generate_otp(length=6):
-    characters = string.digits
-    return ''.join(secrets.choice(characters) for _ in range(length))
 
 class OTPService:
     @staticmethod
